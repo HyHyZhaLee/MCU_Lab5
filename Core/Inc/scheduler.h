@@ -37,10 +37,11 @@ private:
 
     uint8_t SCH_Delete_Task(sTask* delTask){ //For deleting task, returning number of task left
     	sTask*phead = this->SCH_tasks_G;
+    	if(phead == NULL) return -1;
     	// Case head = delNode
     	if(phead == delTask) {
-    		delete phead;
     		SCH_tasks_G = SCH_tasks_G->next;
+    		delete delTask;
     		taskCounter--;
     		return taskCounter;
     	}
@@ -95,7 +96,7 @@ public:
     		taskCounter++;
     		return taskCounter;
     	}
-
+    	newTask->delay -= phead->delay;
     	while(phead->next!=NULL){
     		if(newTask->delay < phead->next->delay) break;
     		newTask->delay -= phead->next->delay;
@@ -107,21 +108,26 @@ public:
     	taskCounter++;
     	return taskCounter;
     };
+
     void SCH_Dispatch_Tasks(void){
     	if(SCH_tasks_G == NULL) return;
 
     	if(SCH_tasks_G->runMe>0) {
     		(*SCH_tasks_G->pTask)(); 	// Run the task
     		SCH_tasks_G->runMe = 0; 	// Reduce the flag
-    		if(SCH_tasks_G->period <= 0) SCH_Delete_Task(SCH_tasks_G);
-    		else{
-    			SCH_tasks_G->delay = SCH_tasks_G->period;
-    			sTask tempTask(SCH_tasks_G->pTask, SCH_tasks_G->delay,  SCH_tasks_G->period);
-    			SCH_Delete_Task(SCH_tasks_G);
-    			SCH_Add_Task(tempTask.pTask, tempTask.delay,  tempTask.period);
-    		}
+
+    		void(*tempPTask)() = SCH_tasks_G->pTask;
+    		uint32_t tempDELAY = SCH_tasks_G->period;
+    		uint32_t tempPERIOD = SCH_tasks_G->period;
+    		SCH_Delete_Task(SCH_tasks_G);
+
+    		if(tempPERIOD >0) SCH_Add_Task(tempPTask, tempDELAY, tempPERIOD);
     	}
+    	HAL_PWR_EnterSLEEPMode(PWR_MAINREGULATOR_ON, PWR_SLEEPENTRY_WFI);
     };
+    uint8_t getNumberOfTask(){
+    	return taskCounter;
+    }
 
 };
 #endif /* INC_SCHEDULER_H_ */
