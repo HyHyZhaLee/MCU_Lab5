@@ -1,9 +1,10 @@
 /*
- * app_scheduler.c
+ * scheduler.cpp
  *
- *  Created on: Nov 27, 2019
- *      Author: VAIO
+ *  Created on: Dec 1, 2023
+ *      Author: Admin
  */
+
 #include "scheduler.h"
 
 #ifdef __cplusplus
@@ -22,15 +23,32 @@ typedef struct {
 // The array of tasks
 static sTask SCH_tasks_G[SCH_MAX_TASKS];
 static uint32_t newTaskID = 0;
+static uint32_t Error_code_G = 0;
 
+static uint32_t Get_New_Task_ID(void){
+	newTaskID++;
+	if(newTaskID == NO_TASK_ID){
+		newTaskID++;
+	}
+	return newTaskID;
+}
 
-static uint32_t Get_New_Task_ID(void);
 void SCH_Go_To_Sleep(){
 	HAL_PWR_EnterSLEEPMode(PWR_MAINREGULATOR_ON, PWR_SLEEPENTRY_WFI);
 }
 
-void SCH_Init(void){
+void Watchdog_init(){
 
+}
+
+void Timer_init(){
+
+}
+
+void SCH_Init(void){
+	Error_code_G = 0;
+	Watchdog_init();
+	Timer_init();
 }
 
 void SCH_Update(void){
@@ -134,13 +152,7 @@ void SCH_Dispatch_Tasks(void){
 	SCH_Go_To_Sleep();
 }
 
-static uint32_t Get_New_Task_ID(void){
-	newTaskID++;
-	if(newTaskID == NO_TASK_ID){
-		newTaskID++;
-	}
-	return newTaskID;
-}
+
 
 #ifdef __cplusplus
 }

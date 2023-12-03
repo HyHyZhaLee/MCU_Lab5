@@ -238,8 +238,8 @@ int main(void)
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
-  SCH_Add_Task(toggleLed, 200, 0);
-  SCH_Add_Task(check_command_parser, 100, 10);
+  SCH_Add_Task(toggleLed, 100, 100);
+  SCH_Add_Task(check_command_parser, 100, 1);
   SCH_Add_Task(timerRun, 100, 1);
   while (1)
   {

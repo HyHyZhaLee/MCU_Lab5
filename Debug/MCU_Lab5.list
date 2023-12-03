@@ -27,23 +27,23 @@ Idx Name          Size      VMA       LMA       File off  Algn
                   ALLOC
  11 .ARM.attributes 00000029  00000000  00000000  00020070  2**0
                   CONTENTS, READONLY
- 12 .debug_info   0000d70b  00000000  00000000  00020099  2**0
+ 12 .debug_info   0000d741  00000000  00000000  00020099  2**0
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 13 .debug_abbrev 00002547  00000000  00000000  0002d7a4  2**0
+ 13 .debug_abbrev 00002579  00000000  00000000  0002d7da  2**0
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 14 .debug_aranges 00000f08  00000000  00000000  0002fcf0  2**3
+ 14 .debug_aranges 00000f18  00000000  00000000  0002fd58  2**3
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 15 .debug_ranges 00000e00  00000000  00000000  00030bf8  2**3
+ 15 .debug_ranges 00000e10  00000000  00000000  00030c70  2**3
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 16 .debug_macro  0001a258  00000000  00000000  000319f8  2**0
+ 16 .debug_macro  0001a242  00000000  00000000  00031a80  2**0
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 17 .debug_line   0000fe64  00000000  00000000  0004bc50  2**0
+ 17 .debug_line   0000fe93  00000000  00000000  0004bcc2  2**0
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 18 .debug_str    0008e47d  00000000  00000000  0005bab4  2**0
+ 18 .debug_str    0008e4a3  00000000  00000000  0005bb55  2**0
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 19 .comment      00000050  00000000  00000000  000e9f31  2**0
+ 19 .comment      00000050  00000000  00000000  000e9ff8  2**0
                   CONTENTS, READONLY
- 20 .debug_frame  000041c0  00000000  00000000  000e9f84  2**2
+ 20 .debug_frame  000041fc  00000000  00000000  000ea048  2**2
                   CONTENTS, READONLY, DEBUGGING, OCTETS
 
 Disassembly of section .text:
@@ -541,25 +541,25 @@ int main(void)
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
-  SCH_Add_Task(toggleLed, 200, 0);
- 8000424:	2200      	movs	r2, #0
- 8000426:	21c8      	movs	r1, #200	; 0xc8
+  SCH_Add_Task(toggleLed, 100, 100);
+ 8000424:	2264      	movs	r2, #100	; 0x64
+ 8000426:	2164      	movs	r1, #100	; 0x64
  8000428:	480a      	ldr	r0, [pc, #40]	; (8000454 <main+0x5c>)
- 800042a:	f000 f9b9 	bl	80007a0 <SCH_Add_Task>
-  SCH_Add_Task(check_command_parser, 100, 10);
- 800042e:	220a      	movs	r2, #10
+ 800042a:	f000 f9d1 	bl	80007d0 <SCH_Add_Task>
+  SCH_Add_Task(check_command_parser, 100, 1);
+ 800042e:	2201      	movs	r2, #1
  8000430:	2164      	movs	r1, #100	; 0x64
  8000432:	4809      	ldr	r0, [pc, #36]	; (8000458 <main+0x60>)
- 8000434:	f000 f9b4 	bl	80007a0 <SCH_Add_Task>
+ 8000434:	f000 f9cc 	bl	80007d0 <SCH_Add_Task>
   SCH_Add_Task(timerRun, 100, 1);
  8000438:	2201      	movs	r2, #1
  800043a:	2164      	movs	r1, #100	; 0x64
  800043c:	4807      	ldr	r0, [pc, #28]	; (800045c <main+0x64>)
- 800043e:	f000 f9af 	bl	80007a0 <SCH_Add_Task>
+ 800043e:	f000 f9c7 	bl	80007d0 <SCH_Add_Task>
   while (1)
   {
 	  SCH_Dispatch_Tasks();
- 8000442:	f000 fba3 	bl	8000b8c <SCH_Dispatch_Tasks>
+ 8000442:	f000 fbbb 	bl	8000bbc <SCH_Dispatch_Tasks>
  8000446:	e7fc      	b.n	8000442 <main+0x4a>
  8000448:	200000bc 	.word	0x200000bc
  800044c:	20000148 	.word	0x20000148
@@ -1085,7 +1085,7 @@ void HAL_TIM_PeriodElapsedCallback ( TIM_HandleTypeDef * htim )
  8000738:	d101      	bne.n	800073e <HAL_TIM_PeriodElapsedCallback+0x16>
 //		timerRun();
 		SCH_Update();
- 800073a:	f000 f811 	bl	8000760 <SCH_Update>
+ 800073a:	f000 f829 	bl	8000790 <SCH_Update>
 	}
 }
  800073e:	bf00      	nop
@@ -1117,735 +1117,735 @@ __STATIC_FORCEINLINE void __disable_irq(void)
   while (1)
  800074e:	e7fe      	b.n	800074e <Error_Handler+0x8>
 
-08000750 <SCH_Go_To_Sleep>:
+08000750 <Get_New_Task_ID>:
+// The array of tasks
 static sTask SCH_tasks_G[SCH_MAX_TASKS];
 static uint32_t newTaskID = 0;
+static uint32_t Error_code_G = 0;
 
-
-static uint32_t Get_New_Task_ID(void);
-void SCH_Go_To_Sleep(){
- 8000750:	b580      	push	{r7, lr}
+static uint32_t Get_New_Task_ID(void){
+ 8000750:	b480      	push	{r7}
  8000752:	af00      	add	r7, sp, #0
-	HAL_PWR_EnterSLEEPMode(PWR_MAINREGULATOR_ON, PWR_SLEEPENTRY_WFI);
- 8000754:	2101      	movs	r1, #1
- 8000756:	2000      	movs	r0, #0
- 8000758:	f001 fd06 	bl	8002168 <HAL_PWR_EnterSLEEPMode>
+	newTaskID++;
+ 8000754:	4b09      	ldr	r3, [pc, #36]	; (800077c <Get_New_Task_ID+0x2c>)
+ 8000756:	681b      	ldr	r3, [r3, #0]
+ 8000758:	3301      	adds	r3, #1
+ 800075a:	4a08      	ldr	r2, [pc, #32]	; (800077c <Get_New_Task_ID+0x2c>)
+ 800075c:	6013      	str	r3, [r2, #0]
+	if(newTaskID == NO_TASK_ID){
+ 800075e:	4b07      	ldr	r3, [pc, #28]	; (800077c <Get_New_Task_ID+0x2c>)
+ 8000760:	681b      	ldr	r3, [r3, #0]
+ 8000762:	2b00      	cmp	r3, #0
+ 8000764:	d104      	bne.n	8000770 <Get_New_Task_ID+0x20>
+		newTaskID++;
+ 8000766:	4b05      	ldr	r3, [pc, #20]	; (800077c <Get_New_Task_ID+0x2c>)
+ 8000768:	681b      	ldr	r3, [r3, #0]
+ 800076a:	3301      	adds	r3, #1
+ 800076c:	4a03      	ldr	r2, [pc, #12]	; (800077c <Get_New_Task_ID+0x2c>)
+ 800076e:	6013      	str	r3, [r2, #0]
+	}
+	return newTaskID;
+ 8000770:	4b02      	ldr	r3, [pc, #8]	; (800077c <Get_New_Task_ID+0x2c>)
+ 8000772:	681b      	ldr	r3, [r3, #0]
 }
- 800075c:	bf00      	nop
- 800075e:	bd80      	pop	{r7, pc}
+ 8000774:	4618      	mov	r0, r3
+ 8000776:	46bd      	mov	sp, r7
+ 8000778:	bc80      	pop	{r7}
+ 800077a:	4770      	bx	lr
+ 800077c:	20000280 	.word	0x20000280
 
-08000760 <SCH_Update>:
+08000780 <SCH_Go_To_Sleep>:
 
-void SCH_Init(void){
+void SCH_Go_To_Sleep(){
+ 8000780:	b580      	push	{r7, lr}
+ 8000782:	af00      	add	r7, sp, #0
+	HAL_PWR_EnterSLEEPMode(PWR_MAINREGULATOR_ON, PWR_SLEEPENTRY_WFI);
+ 8000784:	2101      	movs	r1, #1
+ 8000786:	2000      	movs	r0, #0
+ 8000788:	f001 fcee 	bl	8002168 <HAL_PWR_EnterSLEEPMode>
+}
+ 800078c:	bf00      	nop
+ 800078e:	bd80      	pop	{r7, pc}
 
+08000790 <SCH_Update>:
+	Error_code_G = 0;
+	Watchdog_init();
+	Timer_init();
 }
 
 void SCH_Update(void){
- 8000760:	b480      	push	{r7}
- 8000762:	af00      	add	r7, sp, #0
+ 8000790:	b480      	push	{r7}
+ 8000792:	af00      	add	r7, sp, #0
 	// Check if there is a task at this location
 	if (SCH_tasks_G[0].pTask && SCH_tasks_G[0].RunMe == 0) {
- 8000764:	4b0d      	ldr	r3, [pc, #52]	; (800079c <SCH_Update+0x3c>)
- 8000766:	681b      	ldr	r3, [r3, #0]
- 8000768:	2b00      	cmp	r3, #0
- 800076a:	d013      	beq.n	8000794 <SCH_Update+0x34>
- 800076c:	4b0b      	ldr	r3, [pc, #44]	; (800079c <SCH_Update+0x3c>)
- 800076e:	7b1b      	ldrb	r3, [r3, #12]
- 8000770:	2b00      	cmp	r3, #0
- 8000772:	d10f      	bne.n	8000794 <SCH_Update+0x34>
+ 8000794:	4b0d      	ldr	r3, [pc, #52]	; (80007cc <SCH_Update+0x3c>)
+ 8000796:	681b      	ldr	r3, [r3, #0]
+ 8000798:	2b00      	cmp	r3, #0
+ 800079a:	d013      	beq.n	80007c4 <SCH_Update+0x34>
+ 800079c:	4b0b      	ldr	r3, [pc, #44]	; (80007cc <SCH_Update+0x3c>)
+ 800079e:	7b1b      	ldrb	r3, [r3, #12]
+ 80007a0:	2b00      	cmp	r3, #0
+ 80007a2:	d10f      	bne.n	80007c4 <SCH_Update+0x34>
 		if(SCH_tasks_G[0].Delay > 0){
- 8000774:	4b09      	ldr	r3, [pc, #36]	; (800079c <SCH_Update+0x3c>)
- 8000776:	685b      	ldr	r3, [r3, #4]
- 8000778:	2b00      	cmp	r3, #0
- 800077a:	d004      	beq.n	8000786 <SCH_Update+0x26>
+ 80007a4:	4b09      	ldr	r3, [pc, #36]	; (80007cc <SCH_Update+0x3c>)
+ 80007a6:	685b      	ldr	r3, [r3, #4]
+ 80007a8:	2b00      	cmp	r3, #0
+ 80007aa:	d004      	beq.n	80007b6 <SCH_Update+0x26>
 			SCH_tasks_G[0].Delay = SCH_tasks_G[0].Delay - 1;
- 800077c:	4b07      	ldr	r3, [pc, #28]	; (800079c <SCH_Update+0x3c>)
- 800077e:	685b      	ldr	r3, [r3, #4]
- 8000780:	3b01      	subs	r3, #1
- 8000782:	4a06      	ldr	r2, [pc, #24]	; (800079c <SCH_Update+0x3c>)
- 8000784:	6053      	str	r3, [r2, #4]
+ 80007ac:	4b07      	ldr	r3, [pc, #28]	; (80007cc <SCH_Update+0x3c>)
+ 80007ae:	685b      	ldr	r3, [r3, #4]
+ 80007b0:	3b01      	subs	r3, #1
+ 80007b2:	4a06      	ldr	r2, [pc, #24]	; (80007cc <SCH_Update+0x3c>)
+ 80007b4:	6053      	str	r3, [r2, #4]
 		}
 		if (SCH_tasks_G[0].Delay == 0) {
- 8000786:	4b05      	ldr	r3, [pc, #20]	; (800079c <SCH_Update+0x3c>)
- 8000788:	685b      	ldr	r3, [r3, #4]
- 800078a:	2b00      	cmp	r3, #0
- 800078c:	d102      	bne.n	8000794 <SCH_Update+0x34>
+ 80007b6:	4b05      	ldr	r3, [pc, #20]	; (80007cc <SCH_Update+0x3c>)
+ 80007b8:	685b      	ldr	r3, [r3, #4]
+ 80007ba:	2b00      	cmp	r3, #0
+ 80007bc:	d102      	bne.n	80007c4 <SCH_Update+0x34>
 			SCH_tasks_G[0].RunMe = 1;
- 800078e:	4b03      	ldr	r3, [pc, #12]	; (800079c <SCH_Update+0x3c>)
- 8000790:	2201      	movs	r2, #1
- 8000792:	731a      	strb	r2, [r3, #12]
+ 80007be:	4b03      	ldr	r3, [pc, #12]	; (80007cc <SCH_Update+0x3c>)
+ 80007c0:	2201      	movs	r2, #1
+ 80007c2:	731a      	strb	r2, [r3, #12]
 		}
 	}
 }
- 8000794:	bf00      	nop
- 8000796:	46bd      	mov	sp, r7
- 8000798:	bc80      	pop	{r7}
- 800079a:	4770      	bx	lr
- 800079c:	200001b8 	.word	0x200001b8
+ 80007c4:	bf00      	nop
+ 80007c6:	46bd      	mov	sp, r7
+ 80007c8:	bc80      	pop	{r7}
+ 80007ca:	4770      	bx	lr
+ 80007cc:	200001b8 	.word	0x200001b8
 
-080007a0 <SCH_Add_Task>:
+080007d0 <SCH_Add_Task>:
 uint32_t SCH_Add_Task(void (* pFunction)(), uint32_t DELAY, uint32_t PERIOD){
- 80007a0:	b5b0      	push	{r4, r5, r7, lr}
- 80007a2:	b088      	sub	sp, #32
- 80007a4:	af00      	add	r7, sp, #0
- 80007a6:	60f8      	str	r0, [r7, #12]
- 80007a8:	60b9      	str	r1, [r7, #8]
- 80007aa:	607a      	str	r2, [r7, #4]
+ 80007d0:	b5b0      	push	{r4, r5, r7, lr}
+ 80007d2:	b088      	sub	sp, #32
+ 80007d4:	af00      	add	r7, sp, #0
+ 80007d6:	60f8      	str	r0, [r7, #12]
+ 80007d8:	60b9      	str	r1, [r7, #8]
+ 80007da:	607a      	str	r2, [r7, #4]
 	uint8_t newTaskIndex = 0; // Index for iterating through tasks
- 80007ac:	2300      	movs	r3, #0
- 80007ae:	77fb      	strb	r3, [r7, #31]
+ 80007dc:	2300      	movs	r3, #0
+ 80007de:	77fb      	strb	r3, [r7, #31]
 	uint32_t sumDelay = 0; // Accumulator for total delay time
- 80007b0:	2300      	movs	r3, #0
- 80007b2:	61bb      	str	r3, [r7, #24]
+ 80007e0:	2300      	movs	r3, #0
+ 80007e2:	61bb      	str	r3, [r7, #24]
 	uint32_t newDelay = 0; // Delay time for the new task
- 80007b4:	2300      	movs	r3, #0
- 80007b6:	613b      	str	r3, [r7, #16]
+ 80007e4:	2300      	movs	r3, #0
+ 80007e6:	613b      	str	r3, [r7, #16]
 
 	// Iterate through tasks to find a suitable position for the new task
 	for(newTaskIndex = 0; newTaskIndex < SCH_MAX_TASKS; newTaskIndex ++){
- 80007b8:	2300      	movs	r3, #0
- 80007ba:	77fb      	strb	r3, [r7, #31]
- 80007bc:	e0e7      	b.n	800098e <SCH_Add_Task+0x1ee>
+ 80007e8:	2300      	movs	r3, #0
+ 80007ea:	77fb      	strb	r3, [r7, #31]
+ 80007ec:	e0e7      	b.n	80009be <SCH_Add_Task+0x1ee>
 		sumDelay += SCH_tasks_G[newTaskIndex].Delay;
- 80007be:	7ffa      	ldrb	r2, [r7, #31]
- 80007c0:	4977      	ldr	r1, [pc, #476]	; (80009a0 <SCH_Add_Task+0x200>)
- 80007c2:	4613      	mov	r3, r2
- 80007c4:	009b      	lsls	r3, r3, #2
- 80007c6:	4413      	add	r3, r2
- 80007c8:	009b      	lsls	r3, r3, #2
- 80007ca:	440b      	add	r3, r1
- 80007cc:	3304      	adds	r3, #4
- 80007ce:	681b      	ldr	r3, [r3, #0]
- 80007d0:	69ba      	ldr	r2, [r7, #24]
- 80007d2:	4413      	add	r3, r2
- 80007d4:	61bb      	str	r3, [r7, #24]
+ 80007ee:	7ffa      	ldrb	r2, [r7, #31]
+ 80007f0:	4977      	ldr	r1, [pc, #476]	; (80009d0 <SCH_Add_Task+0x200>)
+ 80007f2:	4613      	mov	r3, r2
+ 80007f4:	009b      	lsls	r3, r3, #2
+ 80007f6:	4413      	add	r3, r2
+ 80007f8:	009b      	lsls	r3, r3, #2
+ 80007fa:	440b      	add	r3, r1
+ 80007fc:	3304      	adds	r3, #4
+ 80007fe:	681b      	ldr	r3, [r3, #0]
+ 8000800:	69ba      	ldr	r2, [r7, #24]
+ 8000802:	4413      	add	r3, r2
+ 8000804:	61bb      	str	r3, [r7, #24]
 
 		// Check if the current position is suitable for the new task
 		if(sumDelay > DELAY){
- 80007d6:	69ba      	ldr	r2, [r7, #24]
- 80007d8:	68bb      	ldr	r3, [r7, #8]
- 80007da:	429a      	cmp	r2, r3
- 80007dc:	d97c      	bls.n	80008d8 <SCH_Add_Task+0x138>
+ 8000806:	69ba      	ldr	r2, [r7, #24]
+ 8000808:	68bb      	ldr	r3, [r7, #8]
+ 800080a:	429a      	cmp	r2, r3
+ 800080c:	d97c      	bls.n	8000908 <SCH_Add_Task+0x138>
 			// Calculate the delay for the new task and adjust the delay of the current task
 			newDelay = DELAY - (sumDelay - SCH_tasks_G[newTaskIndex].Delay);
- 80007de:	7ffa      	ldrb	r2, [r7, #31]
- 80007e0:	496f      	ldr	r1, [pc, #444]	; (80009a0 <SCH_Add_Task+0x200>)
- 80007e2:	4613      	mov	r3, r2
- 80007e4:	009b      	lsls	r3, r3, #2
- 80007e6:	4413      	add	r3, r2
- 80007e8:	009b      	lsls	r3, r3, #2
- 80007ea:	440b      	add	r3, r1
- 80007ec:	3304      	adds	r3, #4
- 80007ee:	681a      	ldr	r2, [r3, #0]
- 80007f0:	69bb      	ldr	r3, [r7, #24]
- 80007f2:	1ad3      	subs	r3, r2, r3
- 80007f4:	68ba      	ldr	r2, [r7, #8]
- 80007f6:	4413      	add	r3, r2
- 80007f8:	613b      	str	r3, [r7, #16]
+ 800080e:	7ffa      	ldrb	r2, [r7, #31]
+ 8000810:	496f      	ldr	r1, [pc, #444]	; (80009d0 <SCH_Add_Task+0x200>)
+ 8000812:	4613      	mov	r3, r2
+ 8000814:	009b      	lsls	r3, r3, #2
+ 8000816:	4413      	add	r3, r2
+ 8000818:	009b      	lsls	r3, r3, #2
+ 800081a:	440b      	add	r3, r1
+ 800081c:	3304      	adds	r3, #4
+ 800081e:	681a      	ldr	r2, [r3, #0]
+ 8000820:	69bb      	ldr	r3, [r7, #24]
+ 8000822:	1ad3      	subs	r3, r2, r3
+ 8000824:	68ba      	ldr	r2, [r7, #8]
+ 8000826:	4413      	add	r3, r2
+ 8000828:	613b      	str	r3, [r7, #16]
 			SCH_tasks_G[newTaskIndex].Delay = sumDelay - DELAY;
- 80007fa:	7ffa      	ldrb	r2, [r7, #31]
- 80007fc:	69b9      	ldr	r1, [r7, #24]
- 80007fe:	68bb      	ldr	r3, [r7, #8]
- 8000800:	1ac9      	subs	r1, r1, r3
- 8000802:	4867      	ldr	r0, [pc, #412]	; (80009a0 <SCH_Add_Task+0x200>)
- 8000804:	4613      	mov	r3, r2
- 8000806:	009b      	lsls	r3, r3, #2
- 8000808:	4413      	add	r3, r2
- 800080a:	009b      	lsls	r3, r3, #2
- 800080c:	4403      	add	r3, r0
- 800080e:	3304      	adds	r3, #4
- 8000810:	6019      	str	r1, [r3, #0]
+ 800082a:	7ffa      	ldrb	r2, [r7, #31]
+ 800082c:	69b9      	ldr	r1, [r7, #24]
+ 800082e:	68bb      	ldr	r3, [r7, #8]
+ 8000830:	1ac9      	subs	r1, r1, r3
+ 8000832:	4867      	ldr	r0, [pc, #412]	; (80009d0 <SCH_Add_Task+0x200>)
+ 8000834:	4613      	mov	r3, r2
+ 8000836:	009b      	lsls	r3, r3, #2
+ 8000838:	4413      	add	r3, r2
+ 800083a:	009b      	lsls	r3, r3, #2
+ 800083c:	4403      	add	r3, r0
+ 800083e:	3304      	adds	r3, #4
+ 8000840:	6019      	str	r1, [r3, #0]
 
 			// Shift tasks down to make room for the new task
 			for(uint8_t i = SCH_MAX_TASKS - 1; i > newTaskIndex; i--){
- 8000812:	2309      	movs	r3, #9
- 8000814:	75fb      	strb	r3, [r7, #23]
- 8000816:	e017      	b.n	8000848 <SCH_Add_Task+0xa8>
+ 8000842:	2309      	movs	r3, #9
+ 8000844:	75fb      	strb	r3, [r7, #23]
+ 8000846:	e017      	b.n	8000878 <SCH_Add_Task+0xa8>
 				SCH_tasks_G[i] = SCH_tasks_G[i - 1];
- 8000818:	7dfb      	ldrb	r3, [r7, #23]
- 800081a:	1e5a      	subs	r2, r3, #1
- 800081c:	7df9      	ldrb	r1, [r7, #23]
- 800081e:	4860      	ldr	r0, [pc, #384]	; (80009a0 <SCH_Add_Task+0x200>)
- 8000820:	460b      	mov	r3, r1
- 8000822:	009b      	lsls	r3, r3, #2
- 8000824:	440b      	add	r3, r1
- 8000826:	009b      	lsls	r3, r3, #2
- 8000828:	4418      	add	r0, r3
- 800082a:	495d      	ldr	r1, [pc, #372]	; (80009a0 <SCH_Add_Task+0x200>)
- 800082c:	4613      	mov	r3, r2
- 800082e:	009b      	lsls	r3, r3, #2
- 8000830:	4413      	add	r3, r2
- 8000832:	009b      	lsls	r3, r3, #2
- 8000834:	440b      	add	r3, r1
- 8000836:	4604      	mov	r4, r0
- 8000838:	461d      	mov	r5, r3
- 800083a:	cd0f      	ldmia	r5!, {r0, r1, r2, r3}
- 800083c:	c40f      	stmia	r4!, {r0, r1, r2, r3}
- 800083e:	682b      	ldr	r3, [r5, #0]
- 8000840:	6023      	str	r3, [r4, #0]
+ 8000848:	7dfb      	ldrb	r3, [r7, #23]
+ 800084a:	1e5a      	subs	r2, r3, #1
+ 800084c:	7df9      	ldrb	r1, [r7, #23]
+ 800084e:	4860      	ldr	r0, [pc, #384]	; (80009d0 <SCH_Add_Task+0x200>)
+ 8000850:	460b      	mov	r3, r1
+ 8000852:	009b      	lsls	r3, r3, #2
+ 8000854:	440b      	add	r3, r1
+ 8000856:	009b      	lsls	r3, r3, #2
+ 8000858:	4418      	add	r0, r3
+ 800085a:	495d      	ldr	r1, [pc, #372]	; (80009d0 <SCH_Add_Task+0x200>)
+ 800085c:	4613      	mov	r3, r2
+ 800085e:	009b      	lsls	r3, r3, #2
+ 8000860:	4413      	add	r3, r2
+ 8000862:	009b      	lsls	r3, r3, #2
+ 8000864:	440b      	add	r3, r1
+ 8000866:	4604      	mov	r4, r0
+ 8000868:	461d      	mov	r5, r3
+ 800086a:	cd0f      	ldmia	r5!, {r0, r1, r2, r3}
+ 800086c:	c40f      	stmia	r4!, {r0, r1, r2, r3}
+ 800086e:	682b      	ldr	r3, [r5, #0]
+ 8000870:	6023      	str	r3, [r4, #0]
 			for(uint8_t i = SCH_MAX_TASKS - 1; i > newTaskIndex; i--){
- 8000842:	7dfb      	ldrb	r3, [r7, #23]
- 8000844:	3b01      	subs	r3, #1
- 8000846:	75fb      	strb	r3, [r7, #23]
- 8000848:	7dfa      	ldrb	r2, [r7, #23]
- 800084a:	7ffb      	ldrb	r3, [r7, #31]
- 800084c:	429a      	cmp	r2, r3
- 800084e:	d8e3      	bhi.n	8000818 <SCH_Add_Task+0x78>
+ 8000872:	7dfb      	ldrb	r3, [r7, #23]
+ 8000874:	3b01      	subs	r3, #1
+ 8000876:	75fb      	strb	r3, [r7, #23]
+ 8000878:	7dfa      	ldrb	r2, [r7, #23]
+ 800087a:	7ffb      	ldrb	r3, [r7, #31]
+ 800087c:	429a      	cmp	r2, r3
+ 800087e:	d8e3      	bhi.n	8000848 <SCH_Add_Task+0x78>
 			}
 
 			// Insert the new task at the found position
 			SCH_tasks_G[newTaskIndex].pTask = pFunction;
- 8000850:	7ffa      	ldrb	r2, [r7, #31]
- 8000852:	4953      	ldr	r1, [pc, #332]	; (80009a0 <SCH_Add_Task+0x200>)
- 8000854:	4613      	mov	r3, r2
- 8000856:	009b      	lsls	r3, r3, #2
- 8000858:	4413      	add	r3, r2
- 800085a:	009b      	lsls	r3, r3, #2
- 800085c:	440b      	add	r3, r1
- 800085e:	68fa      	ldr	r2, [r7, #12]
- 8000860:	601a      	str	r2, [r3, #0]
+ 8000880:	7ffa      	ldrb	r2, [r7, #31]
+ 8000882:	4953      	ldr	r1, [pc, #332]	; (80009d0 <SCH_Add_Task+0x200>)
+ 8000884:	4613      	mov	r3, r2
+ 8000886:	009b      	lsls	r3, r3, #2
+ 8000888:	4413      	add	r3, r2
+ 800088a:	009b      	lsls	r3, r3, #2
+ 800088c:	440b      	add	r3, r1
+ 800088e:	68fa      	ldr	r2, [r7, #12]
+ 8000890:	601a      	str	r2, [r3, #0]
 			SCH_tasks_G[newTaskIndex].Delay = newDelay;
- 8000862:	7ffa      	ldrb	r2, [r7, #31]
- 8000864:	494e      	ldr	r1, [pc, #312]	; (80009a0 <SCH_Add_Task+0x200>)
- 8000866:	4613      	mov	r3, r2
- 8000868:	009b      	lsls	r3, r3, #2
- 800086a:	4413      	add	r3, r2
- 800086c:	009b      	lsls	r3, r3, #2
- 800086e:	440b      	add	r3, r1
- 8000870:	3304      	adds	r3, #4
- 8000872:	693a      	ldr	r2, [r7, #16]
- 8000874:	601a      	str	r2, [r3, #0]
+ 8000892:	7ffa      	ldrb	r2, [r7, #31]
+ 8000894:	494e      	ldr	r1, [pc, #312]	; (80009d0 <SCH_Add_Task+0x200>)
+ 8000896:	4613      	mov	r3, r2
+ 8000898:	009b      	lsls	r3, r3, #2
+ 800089a:	4413      	add	r3, r2
+ 800089c:	009b      	lsls	r3, r3, #2
+ 800089e:	440b      	add	r3, r1
+ 80008a0:	3304      	adds	r3, #4
+ 80008a2:	693a      	ldr	r2, [r7, #16]
+ 80008a4:	601a      	str	r2, [r3, #0]
 			SCH_tasks_G[newTaskIndex].Period = PERIOD;
- 8000876:	7ffa      	ldrb	r2, [r7, #31]
- 8000878:	4949      	ldr	r1, [pc, #292]	; (80009a0 <SCH_Add_Task+0x200>)
- 800087a:	4613      	mov	r3, r2
- 800087c:	009b      	lsls	r3, r3, #2
- 800087e:	4413      	add	r3, r2
- 8000880:	009b      	lsls	r3, r3, #2
- 8000882:	440b      	add	r3, r1
- 8000884:	3308      	adds	r3, #8
- 8000886:	687a      	ldr	r2, [r7, #4]
- 8000888:	601a      	str	r2, [r3, #0]
+ 80008a6:	7ffa      	ldrb	r2, [r7, #31]
+ 80008a8:	4949      	ldr	r1, [pc, #292]	; (80009d0 <SCH_Add_Task+0x200>)
+ 80008aa:	4613      	mov	r3, r2
+ 80008ac:	009b      	lsls	r3, r3, #2
+ 80008ae:	4413      	add	r3, r2
+ 80008b0:	009b      	lsls	r3, r3, #2
+ 80008b2:	440b      	add	r3, r1
+ 80008b4:	3308      	adds	r3, #8
+ 80008b6:	687a      	ldr	r2, [r7, #4]
+ 80008b8:	601a      	str	r2, [r3, #0]
 			SCH_tasks_G[newTaskIndex].RunMe = (newDelay == 0) ? 1 : 0;
- 800088a:	693b      	ldr	r3, [r7, #16]
- 800088c:	2b00      	cmp	r3, #0
- 800088e:	bf0c      	ite	eq
- 8000890:	2301      	moveq	r3, #1
- 8000892:	2300      	movne	r3, #0
- 8000894:	b2db      	uxtb	r3, r3
- 8000896:	7ffa      	ldrb	r2, [r7, #31]
- 8000898:	4618      	mov	r0, r3
- 800089a:	4941      	ldr	r1, [pc, #260]	; (80009a0 <SCH_Add_Task+0x200>)
- 800089c:	4613      	mov	r3, r2
- 800089e:	009b      	lsls	r3, r3, #2
- 80008a0:	4413      	add	r3, r2
- 80008a2:	009b      	lsls	r3, r3, #2
- 80008a4:	440b      	add	r3, r1
- 80008a6:	330c      	adds	r3, #12
- 80008a8:	4602      	mov	r2, r0
- 80008aa:	701a      	strb	r2, [r3, #0]
-			SCH_tasks_G[newTaskIndex].TaskID = Get_New_Task_ID();
- 80008ac:	7ffc      	ldrb	r4, [r7, #31]
- 80008ae:	f000 f997 	bl	8000be0 <Get_New_Task_ID>
- 80008b2:	4602      	mov	r2, r0
- 80008b4:	493a      	ldr	r1, [pc, #232]	; (80009a0 <SCH_Add_Task+0x200>)
- 80008b6:	4623      	mov	r3, r4
- 80008b8:	009b      	lsls	r3, r3, #2
- 80008ba:	4423      	add	r3, r4
- 80008bc:	009b      	lsls	r3, r3, #2
- 80008be:	440b      	add	r3, r1
- 80008c0:	3310      	adds	r3, #16
- 80008c2:	601a      	str	r2, [r3, #0]
-			return SCH_tasks_G[newTaskIndex].TaskID;
- 80008c4:	7ffa      	ldrb	r2, [r7, #31]
- 80008c6:	4936      	ldr	r1, [pc, #216]	; (80009a0 <SCH_Add_Task+0x200>)
- 80008c8:	4613      	mov	r3, r2
- 80008ca:	009b      	lsls	r3, r3, #2
- 80008cc:	4413      	add	r3, r2
+ 80008ba:	693b      	ldr	r3, [r7, #16]
+ 80008bc:	2b00      	cmp	r3, #0
+ 80008be:	bf0c      	ite	eq
+ 80008c0:	2301      	moveq	r3, #1
+ 80008c2:	2300      	movne	r3, #0
+ 80008c4:	b2db      	uxtb	r3, r3
+ 80008c6:	7ffa      	ldrb	r2, [r7, #31]
+ 80008c8:	4618      	mov	r0, r3
+ 80008ca:	4941      	ldr	r1, [pc, #260]	; (80009d0 <SCH_Add_Task+0x200>)
+ 80008cc:	4613      	mov	r3, r2
  80008ce:	009b      	lsls	r3, r3, #2
- 80008d0:	440b      	add	r3, r1
- 80008d2:	3310      	adds	r3, #16
- 80008d4:	681b      	ldr	r3, [r3, #0]
- 80008d6:	e05f      	b.n	8000998 <SCH_Add_Task+0x1f8>
+ 80008d0:	4413      	add	r3, r2
+ 80008d2:	009b      	lsls	r3, r3, #2
+ 80008d4:	440b      	add	r3, r1
+ 80008d6:	330c      	adds	r3, #12
+ 80008d8:	4602      	mov	r2, r0
+ 80008da:	701a      	strb	r2, [r3, #0]
+			SCH_tasks_G[newTaskIndex].TaskID = Get_New_Task_ID();
+ 80008dc:	7ffc      	ldrb	r4, [r7, #31]
+ 80008de:	f7ff ff37 	bl	8000750 <Get_New_Task_ID>
+ 80008e2:	4602      	mov	r2, r0
+ 80008e4:	493a      	ldr	r1, [pc, #232]	; (80009d0 <SCH_Add_Task+0x200>)
+ 80008e6:	4623      	mov	r3, r4
+ 80008e8:	009b      	lsls	r3, r3, #2
+ 80008ea:	4423      	add	r3, r4
+ 80008ec:	009b      	lsls	r3, r3, #2
+ 80008ee:	440b      	add	r3, r1
+ 80008f0:	3310      	adds	r3, #16
+ 80008f2:	601a      	str	r2, [r3, #0]
+			return SCH_tasks_G[newTaskIndex].TaskID;
+ 80008f4:	7ffa      	ldrb	r2, [r7, #31]
+ 80008f6:	4936      	ldr	r1, [pc, #216]	; (80009d0 <SCH_Add_Task+0x200>)
+ 80008f8:	4613      	mov	r3, r2
+ 80008fa:	009b      	lsls	r3, r3, #2
+ 80008fc:	4413      	add	r3, r2
+ 80008fe:	009b      	lsls	r3, r3, #2
+ 8000900:	440b      	add	r3, r1
+ 8000902:	3310      	adds	r3, #16
+ 8000904:	681b      	ldr	r3, [r3, #0]
+ 8000906:	e05f      	b.n	80009c8 <SCH_Add_Task+0x1f8>
 		} else if(SCH_tasks_G[newTaskIndex].pTask == NULL){
- 80008d8:	7ffa      	ldrb	r2, [r7, #31]
- 80008da:	4931      	ldr	r1, [pc, #196]	; (80009a0 <SCH_Add_Task+0x200>)
- 80008dc:	4613      	mov	r3, r2
- 80008de:	009b      	lsls	r3, r3, #2
- 80008e0:	4413      	add	r3, r2
- 80008e2:	009b      	lsls	r3, r3, #2
- 80008e4:	440b      	add	r3, r1
- 80008e6:	681b      	ldr	r3, [r3, #0]
- 80008e8:	2b00      	cmp	r3, #0
- 80008ea:	d14d      	bne.n	8000988 <SCH_Add_Task+0x1e8>
+ 8000908:	7ffa      	ldrb	r2, [r7, #31]
+ 800090a:	4931      	ldr	r1, [pc, #196]	; (80009d0 <SCH_Add_Task+0x200>)
+ 800090c:	4613      	mov	r3, r2
+ 800090e:	009b      	lsls	r3, r3, #2
+ 8000910:	4413      	add	r3, r2
+ 8000912:	009b      	lsls	r3, r3, #2
+ 8000914:	440b      	add	r3, r1
+ 8000916:	681b      	ldr	r3, [r3, #0]
+ 8000918:	2b00      	cmp	r3, #0
+ 800091a:	d14d      	bne.n	80009b8 <SCH_Add_Task+0x1e8>
 			// If an empty slot is found, insert the new task
 			SCH_tasks_G[newTaskIndex].pTask = pFunction;
- 80008ec:	7ffa      	ldrb	r2, [r7, #31]
- 80008ee:	492c      	ldr	r1, [pc, #176]	; (80009a0 <SCH_Add_Task+0x200>)
- 80008f0:	4613      	mov	r3, r2
- 80008f2:	009b      	lsls	r3, r3, #2
- 80008f4:	4413      	add	r3, r2
- 80008f6:	009b      	lsls	r3, r3, #2
- 80008f8:	440b      	add	r3, r1
- 80008fa:	68fa      	ldr	r2, [r7, #12]
- 80008fc:	601a      	str	r2, [r3, #0]
+ 800091c:	7ffa      	ldrb	r2, [r7, #31]
+ 800091e:	492c      	ldr	r1, [pc, #176]	; (80009d0 <SCH_Add_Task+0x200>)
+ 8000920:	4613      	mov	r3, r2
+ 8000922:	009b      	lsls	r3, r3, #2
+ 8000924:	4413      	add	r3, r2
+ 8000926:	009b      	lsls	r3, r3, #2
+ 8000928:	440b      	add	r3, r1
+ 800092a:	68fa      	ldr	r2, [r7, #12]
+ 800092c:	601a      	str	r2, [r3, #0]
 			SCH_tasks_G[newTaskIndex].Delay = DELAY - sumDelay;
- 80008fe:	7ffa      	ldrb	r2, [r7, #31]
- 8000900:	68b9      	ldr	r1, [r7, #8]
- 8000902:	69bb      	ldr	r3, [r7, #24]
- 8000904:	1ac9      	subs	r1, r1, r3
- 8000906:	4826      	ldr	r0, [pc, #152]	; (80009a0 <SCH_Add_Task+0x200>)
- 8000908:	4613      	mov	r3, r2
- 800090a:	009b      	lsls	r3, r3, #2
- 800090c:	4413      	add	r3, r2
- 800090e:	009b      	lsls	r3, r3, #2
- 8000910:	4403      	add	r3, r0
- 8000912:	3304      	adds	r3, #4
- 8000914:	6019      	str	r1, [r3, #0]
+ 800092e:	7ffa      	ldrb	r2, [r7, #31]
+ 8000930:	68b9      	ldr	r1, [r7, #8]
+ 8000932:	69bb      	ldr	r3, [r7, #24]
+ 8000934:	1ac9      	subs	r1, r1, r3
+ 8000936:	4826      	ldr	r0, [pc, #152]	; (80009d0 <SCH_Add_Task+0x200>)
+ 8000938:	4613      	mov	r3, r2
+ 800093a:	009b      	lsls	r3, r3, #2
+ 800093c:	4413      	add	r3, r2
+ 800093e:	009b      	lsls	r3, r3, #2
+ 8000940:	4403      	add	r3, r0
+ 8000942:	3304      	adds	r3, #4
+ 8000944:	6019      	str	r1, [r3, #0]
 			SCH_tasks_G[newTaskIndex].Period = PERIOD;
- 8000916:	7ffa      	ldrb	r2, [r7, #31]
- 8000918:	4921      	ldr	r1, [pc, #132]	; (80009a0 <SCH_Add_Task+0x200>)
- 800091a:	4613      	mov	r3, r2
- 800091c:	009b      	lsls	r3, r3, #2
- 800091e:	4413      	add	r3, r2
- 8000920:	009b      	lsls	r3, r3, #2
- 8000922:	440b      	add	r3, r1
- 8000924:	3308      	adds	r3, #8
- 8000926:	687a      	ldr	r2, [r7, #4]
- 8000928:	601a      	str	r2, [r3, #0]
-			SCH_tasks_G[newTaskIndex].RunMe = (SCH_tasks_G[newTaskIndex].Delay == 0) ? 1 : 0;
- 800092a:	7ffa      	ldrb	r2, [r7, #31]
- 800092c:	491c      	ldr	r1, [pc, #112]	; (80009a0 <SCH_Add_Task+0x200>)
- 800092e:	4613      	mov	r3, r2
- 8000930:	009b      	lsls	r3, r3, #2
- 8000932:	4413      	add	r3, r2
- 8000934:	009b      	lsls	r3, r3, #2
- 8000936:	440b      	add	r3, r1
- 8000938:	3304      	adds	r3, #4
- 800093a:	681b      	ldr	r3, [r3, #0]
- 800093c:	2b00      	cmp	r3, #0
- 800093e:	bf0c      	ite	eq
- 8000940:	2301      	moveq	r3, #1
- 8000942:	2300      	movne	r3, #0
- 8000944:	b2db      	uxtb	r3, r3
  8000946:	7ffa      	ldrb	r2, [r7, #31]
- 8000948:	4618      	mov	r0, r3
- 800094a:	4915      	ldr	r1, [pc, #84]	; (80009a0 <SCH_Add_Task+0x200>)
- 800094c:	4613      	mov	r3, r2
- 800094e:	009b      	lsls	r3, r3, #2
- 8000950:	4413      	add	r3, r2
- 8000952:	009b      	lsls	r3, r3, #2
- 8000954:	440b      	add	r3, r1
- 8000956:	330c      	adds	r3, #12
- 8000958:	4602      	mov	r2, r0
- 800095a:	701a      	strb	r2, [r3, #0]
-			SCH_tasks_G[newTaskIndex].TaskID = Get_New_Task_ID();
- 800095c:	7ffc      	ldrb	r4, [r7, #31]
- 800095e:	f000 f93f 	bl	8000be0 <Get_New_Task_ID>
- 8000962:	4602      	mov	r2, r0
- 8000964:	490e      	ldr	r1, [pc, #56]	; (80009a0 <SCH_Add_Task+0x200>)
- 8000966:	4623      	mov	r3, r4
- 8000968:	009b      	lsls	r3, r3, #2
- 800096a:	4423      	add	r3, r4
- 800096c:	009b      	lsls	r3, r3, #2
- 800096e:	440b      	add	r3, r1
- 8000970:	3310      	adds	r3, #16
- 8000972:	601a      	str	r2, [r3, #0]
-			return SCH_tasks_G[newTaskIndex].TaskID;
- 8000974:	7ffa      	ldrb	r2, [r7, #31]
- 8000976:	490a      	ldr	r1, [pc, #40]	; (80009a0 <SCH_Add_Task+0x200>)
- 8000978:	4613      	mov	r3, r2
- 800097a:	009b      	lsls	r3, r3, #2
- 800097c:	4413      	add	r3, r2
+ 8000948:	4921      	ldr	r1, [pc, #132]	; (80009d0 <SCH_Add_Task+0x200>)
+ 800094a:	4613      	mov	r3, r2
+ 800094c:	009b      	lsls	r3, r3, #2
+ 800094e:	4413      	add	r3, r2
+ 8000950:	009b      	lsls	r3, r3, #2
+ 8000952:	440b      	add	r3, r1
+ 8000954:	3308      	adds	r3, #8
+ 8000956:	687a      	ldr	r2, [r7, #4]
+ 8000958:	601a      	str	r2, [r3, #0]
+			SCH_tasks_G[newTaskIndex].RunMe = (SCH_tasks_G[newTaskIndex].Delay == 0) ? 1 : 0;
+ 800095a:	7ffa      	ldrb	r2, [r7, #31]
+ 800095c:	491c      	ldr	r1, [pc, #112]	; (80009d0 <SCH_Add_Task+0x200>)
+ 800095e:	4613      	mov	r3, r2
+ 8000960:	009b      	lsls	r3, r3, #2
+ 8000962:	4413      	add	r3, r2
+ 8000964:	009b      	lsls	r3, r3, #2
+ 8000966:	440b      	add	r3, r1
+ 8000968:	3304      	adds	r3, #4
+ 800096a:	681b      	ldr	r3, [r3, #0]
+ 800096c:	2b00      	cmp	r3, #0
+ 800096e:	bf0c      	ite	eq
+ 8000970:	2301      	moveq	r3, #1
+ 8000972:	2300      	movne	r3, #0
+ 8000974:	b2db      	uxtb	r3, r3
+ 8000976:	7ffa      	ldrb	r2, [r7, #31]
+ 8000978:	4618      	mov	r0, r3
+ 800097a:	4915      	ldr	r1, [pc, #84]	; (80009d0 <SCH_Add_Task+0x200>)
+ 800097c:	4613      	mov	r3, r2
  800097e:	009b      	lsls	r3, r3, #2
- 8000980:	440b      	add	r3, r1
- 8000982:	3310      	adds	r3, #16
- 8000984:	681b      	ldr	r3, [r3, #0]
- 8000986:	e007      	b.n	8000998 <SCH_Add_Task+0x1f8>
+ 8000980:	4413      	add	r3, r2
+ 8000982:	009b      	lsls	r3, r3, #2
+ 8000984:	440b      	add	r3, r1
+ 8000986:	330c      	adds	r3, #12
+ 8000988:	4602      	mov	r2, r0
+ 800098a:	701a      	strb	r2, [r3, #0]
+			SCH_tasks_G[newTaskIndex].TaskID = Get_New_Task_ID();
+ 800098c:	7ffc      	ldrb	r4, [r7, #31]
+ 800098e:	f7ff fedf 	bl	8000750 <Get_New_Task_ID>
+ 8000992:	4602      	mov	r2, r0
+ 8000994:	490e      	ldr	r1, [pc, #56]	; (80009d0 <SCH_Add_Task+0x200>)
+ 8000996:	4623      	mov	r3, r4
+ 8000998:	009b      	lsls	r3, r3, #2
+ 800099a:	4423      	add	r3, r4
+ 800099c:	009b      	lsls	r3, r3, #2
+ 800099e:	440b      	add	r3, r1
+ 80009a0:	3310      	adds	r3, #16
+ 80009a2:	601a      	str	r2, [r3, #0]
+			return SCH_tasks_G[newTaskIndex].TaskID;
+ 80009a4:	7ffa      	ldrb	r2, [r7, #31]
+ 80009a6:	490a      	ldr	r1, [pc, #40]	; (80009d0 <SCH_Add_Task+0x200>)
+ 80009a8:	4613      	mov	r3, r2
+ 80009aa:	009b      	lsls	r3, r3, #2
+ 80009ac:	4413      	add	r3, r2
+ 80009ae:	009b      	lsls	r3, r3, #2
+ 80009b0:	440b      	add	r3, r1
+ 80009b2:	3310      	adds	r3, #16
+ 80009b4:	681b      	ldr	r3, [r3, #0]
+ 80009b6:	e007      	b.n	80009c8 <SCH_Add_Task+0x1f8>
 	for(newTaskIndex = 0; newTaskIndex < SCH_MAX_TASKS; newTaskIndex ++){
- 8000988:	7ffb      	ldrb	r3, [r7, #31]
- 800098a:	3301      	adds	r3, #1
- 800098c:	77fb      	strb	r3, [r7, #31]
- 800098e:	7ffb      	ldrb	r3, [r7, #31]
- 8000990:	2b09      	cmp	r3, #9
- 8000992:	f67f af14 	bls.w	80007be <SCH_Add_Task+0x1e>
+ 80009b8:	7ffb      	ldrb	r3, [r7, #31]
+ 80009ba:	3301      	adds	r3, #1
+ 80009bc:	77fb      	strb	r3, [r7, #31]
+ 80009be:	7ffb      	ldrb	r3, [r7, #31]
+ 80009c0:	2b09      	cmp	r3, #9
+ 80009c2:	f67f af14 	bls.w	80007ee <SCH_Add_Task+0x1e>
 		}
 	}
 
 	// Return a special value (such as 0 or an error code) if no space is available
 	return NO_TASK_ID; // Example error code for no space
- 8000996:	2300      	movs	r3, #0
+ 80009c6:	2300      	movs	r3, #0
 }
- 8000998:	4618      	mov	r0, r3
- 800099a:	3720      	adds	r7, #32
- 800099c:	46bd      	mov	sp, r7
- 800099e:	bdb0      	pop	{r4, r5, r7, pc}
- 80009a0:	200001b8 	.word	0x200001b8
+ 80009c8:	4618      	mov	r0, r3
+ 80009ca:	3720      	adds	r7, #32
+ 80009cc:	46bd      	mov	sp, r7
+ 80009ce:	bdb0      	pop	{r4, r5, r7, pc}
+ 80009d0:	200001b8 	.word	0x200001b8
 
-080009a4 <SCH_Delete_Task>:
+080009d4 <SCH_Delete_Task>:
 
 
 
 uint8_t SCH_Delete_Task(uint32_t taskID){
- 80009a4:	b480      	push	{r7}
- 80009a6:	b085      	sub	sp, #20
- 80009a8:	af00      	add	r7, sp, #0
- 80009aa:	6078      	str	r0, [r7, #4]
+ 80009d4:	b480      	push	{r7}
+ 80009d6:	b085      	sub	sp, #20
+ 80009d8:	af00      	add	r7, sp, #0
+ 80009da:	6078      	str	r0, [r7, #4]
 	uint8_t Return_code  = 0;
- 80009ac:	2300      	movs	r3, #0
- 80009ae:	737b      	strb	r3, [r7, #13]
+ 80009dc:	2300      	movs	r3, #0
+ 80009de:	737b      	strb	r3, [r7, #13]
 	uint8_t taskIndex;
 	uint8_t j;
 	if(taskID != NO_TASK_ID){
- 80009b0:	687b      	ldr	r3, [r7, #4]
- 80009b2:	2b00      	cmp	r3, #0
- 80009b4:	f000 80e2 	beq.w	8000b7c <SCH_Delete_Task+0x1d8>
+ 80009e0:	687b      	ldr	r3, [r7, #4]
+ 80009e2:	2b00      	cmp	r3, #0
+ 80009e4:	f000 80e2 	beq.w	8000bac <SCH_Delete_Task+0x1d8>
 		for(taskIndex = 0; taskIndex < SCH_MAX_TASKS; taskIndex ++){
- 80009b8:	2300      	movs	r3, #0
- 80009ba:	73fb      	strb	r3, [r7, #15]
- 80009bc:	e0da      	b.n	8000b74 <SCH_Delete_Task+0x1d0>
+ 80009e8:	2300      	movs	r3, #0
+ 80009ea:	73fb      	strb	r3, [r7, #15]
+ 80009ec:	e0da      	b.n	8000ba4 <SCH_Delete_Task+0x1d0>
 			if(SCH_tasks_G[taskIndex].TaskID == taskID){
- 80009be:	7bfa      	ldrb	r2, [r7, #15]
- 80009c0:	4971      	ldr	r1, [pc, #452]	; (8000b88 <SCH_Delete_Task+0x1e4>)
- 80009c2:	4613      	mov	r3, r2
- 80009c4:	009b      	lsls	r3, r3, #2
- 80009c6:	4413      	add	r3, r2
- 80009c8:	009b      	lsls	r3, r3, #2
- 80009ca:	440b      	add	r3, r1
- 80009cc:	3310      	adds	r3, #16
- 80009ce:	681b      	ldr	r3, [r3, #0]
- 80009d0:	687a      	ldr	r2, [r7, #4]
- 80009d2:	429a      	cmp	r2, r3
- 80009d4:	f040 80cb 	bne.w	8000b6e <SCH_Delete_Task+0x1ca>
-				Return_code = 1;
- 80009d8:	2301      	movs	r3, #1
- 80009da:	737b      	strb	r3, [r7, #13]
-				if(taskIndex != 0 && taskIndex < SCH_MAX_TASKS - 1){
- 80009dc:	7bfb      	ldrb	r3, [r7, #15]
- 80009de:	2b00      	cmp	r3, #0
- 80009e0:	d02b      	beq.n	8000a3a <SCH_Delete_Task+0x96>
- 80009e2:	7bfb      	ldrb	r3, [r7, #15]
- 80009e4:	2b08      	cmp	r3, #8
- 80009e6:	d828      	bhi.n	8000a3a <SCH_Delete_Task+0x96>
-					if(SCH_tasks_G[taskIndex+1].pTask != 0x0000){
- 80009e8:	7bfb      	ldrb	r3, [r7, #15]
- 80009ea:	1c5a      	adds	r2, r3, #1
- 80009ec:	4966      	ldr	r1, [pc, #408]	; (8000b88 <SCH_Delete_Task+0x1e4>)
- 80009ee:	4613      	mov	r3, r2
- 80009f0:	009b      	lsls	r3, r3, #2
- 80009f2:	4413      	add	r3, r2
+ 80009ee:	7bfa      	ldrb	r2, [r7, #15]
+ 80009f0:	4971      	ldr	r1, [pc, #452]	; (8000bb8 <SCH_Delete_Task+0x1e4>)
+ 80009f2:	4613      	mov	r3, r2
  80009f4:	009b      	lsls	r3, r3, #2
- 80009f6:	440b      	add	r3, r1
- 80009f8:	681b      	ldr	r3, [r3, #0]
- 80009fa:	2b00      	cmp	r3, #0
- 80009fc:	d01d      	beq.n	8000a3a <SCH_Delete_Task+0x96>
+ 80009f6:	4413      	add	r3, r2
+ 80009f8:	009b      	lsls	r3, r3, #2
+ 80009fa:	440b      	add	r3, r1
+ 80009fc:	3310      	adds	r3, #16
+ 80009fe:	681b      	ldr	r3, [r3, #0]
+ 8000a00:	687a      	ldr	r2, [r7, #4]
+ 8000a02:	429a      	cmp	r2, r3
+ 8000a04:	f040 80cb 	bne.w	8000b9e <SCH_Delete_Task+0x1ca>
+				Return_code = 1;
+ 8000a08:	2301      	movs	r3, #1
+ 8000a0a:	737b      	strb	r3, [r7, #13]
+				if(taskIndex != 0 && taskIndex < SCH_MAX_TASKS - 1){
+ 8000a0c:	7bfb      	ldrb	r3, [r7, #15]
+ 8000a0e:	2b00      	cmp	r3, #0
+ 8000a10:	d02b      	beq.n	8000a6a <SCH_Delete_Task+0x96>
+ 8000a12:	7bfb      	ldrb	r3, [r7, #15]
+ 8000a14:	2b08      	cmp	r3, #8
+ 8000a16:	d828      	bhi.n	8000a6a <SCH_Delete_Task+0x96>
+					if(SCH_tasks_G[taskIndex+1].pTask != 0x0000){
+ 8000a18:	7bfb      	ldrb	r3, [r7, #15]
+ 8000a1a:	1c5a      	adds	r2, r3, #1
+ 8000a1c:	4966      	ldr	r1, [pc, #408]	; (8000bb8 <SCH_Delete_Task+0x1e4>)
+ 8000a1e:	4613      	mov	r3, r2
+ 8000a20:	009b      	lsls	r3, r3, #2
+ 8000a22:	4413      	add	r3, r2
+ 8000a24:	009b      	lsls	r3, r3, #2
+ 8000a26:	440b      	add	r3, r1
+ 8000a28:	681b      	ldr	r3, [r3, #0]
+ 8000a2a:	2b00      	cmp	r3, #0
+ 8000a2c:	d01d      	beq.n	8000a6a <SCH_Delete_Task+0x96>
 						SCH_tasks_G[taskIndex+1].Delay += SCH_tasks_G[taskIndex].Delay;
- 80009fe:	7bfb      	ldrb	r3, [r7, #15]
- 8000a00:	1c5a      	adds	r2, r3, #1
- 8000a02:	4961      	ldr	r1, [pc, #388]	; (8000b88 <SCH_Delete_Task+0x1e4>)
- 8000a04:	4613      	mov	r3, r2
- 8000a06:	009b      	lsls	r3, r3, #2
- 8000a08:	4413      	add	r3, r2
- 8000a0a:	009b      	lsls	r3, r3, #2
- 8000a0c:	440b      	add	r3, r1
- 8000a0e:	3304      	adds	r3, #4
- 8000a10:	6819      	ldr	r1, [r3, #0]
- 8000a12:	7bfa      	ldrb	r2, [r7, #15]
- 8000a14:	485c      	ldr	r0, [pc, #368]	; (8000b88 <SCH_Delete_Task+0x1e4>)
- 8000a16:	4613      	mov	r3, r2
- 8000a18:	009b      	lsls	r3, r3, #2
- 8000a1a:	4413      	add	r3, r2
- 8000a1c:	009b      	lsls	r3, r3, #2
- 8000a1e:	4403      	add	r3, r0
- 8000a20:	3304      	adds	r3, #4
- 8000a22:	681b      	ldr	r3, [r3, #0]
- 8000a24:	7bfa      	ldrb	r2, [r7, #15]
- 8000a26:	3201      	adds	r2, #1
- 8000a28:	4419      	add	r1, r3
- 8000a2a:	4857      	ldr	r0, [pc, #348]	; (8000b88 <SCH_Delete_Task+0x1e4>)
- 8000a2c:	4613      	mov	r3, r2
- 8000a2e:	009b      	lsls	r3, r3, #2
- 8000a30:	4413      	add	r3, r2
- 8000a32:	009b      	lsls	r3, r3, #2
- 8000a34:	4403      	add	r3, r0
- 8000a36:	3304      	adds	r3, #4
- 8000a38:	6019      	str	r1, [r3, #0]
+ 8000a2e:	7bfb      	ldrb	r3, [r7, #15]
+ 8000a30:	1c5a      	adds	r2, r3, #1
+ 8000a32:	4961      	ldr	r1, [pc, #388]	; (8000bb8 <SCH_Delete_Task+0x1e4>)
+ 8000a34:	4613      	mov	r3, r2
+ 8000a36:	009b      	lsls	r3, r3, #2
+ 8000a38:	4413      	add	r3, r2
+ 8000a3a:	009b      	lsls	r3, r3, #2
+ 8000a3c:	440b      	add	r3, r1
+ 8000a3e:	3304      	adds	r3, #4
+ 8000a40:	6819      	ldr	r1, [r3, #0]
+ 8000a42:	7bfa      	ldrb	r2, [r7, #15]
+ 8000a44:	485c      	ldr	r0, [pc, #368]	; (8000bb8 <SCH_Delete_Task+0x1e4>)
+ 8000a46:	4613      	mov	r3, r2
+ 8000a48:	009b      	lsls	r3, r3, #2
+ 8000a4a:	4413      	add	r3, r2
+ 8000a4c:	009b      	lsls	r3, r3, #2
+ 8000a4e:	4403      	add	r3, r0
+ 8000a50:	3304      	adds	r3, #4
+ 8000a52:	681b      	ldr	r3, [r3, #0]
+ 8000a54:	7bfa      	ldrb	r2, [r7, #15]
+ 8000a56:	3201      	adds	r2, #1
+ 8000a58:	4419      	add	r1, r3
+ 8000a5a:	4857      	ldr	r0, [pc, #348]	; (8000bb8 <SCH_Delete_Task+0x1e4>)
+ 8000a5c:	4613      	mov	r3, r2
+ 8000a5e:	009b      	lsls	r3, r3, #2
+ 8000a60:	4413      	add	r3, r2
+ 8000a62:	009b      	lsls	r3, r3, #2
+ 8000a64:	4403      	add	r3, r0
+ 8000a66:	3304      	adds	r3, #4
+ 8000a68:	6019      	str	r1, [r3, #0]
 					}
 				}
 
 				for( j = taskIndex; j < SCH_MAX_TASKS - 1; j ++){
- 8000a3a:	7bfb      	ldrb	r3, [r7, #15]
- 8000a3c:	73bb      	strb	r3, [r7, #14]
- 8000a3e:	e060      	b.n	8000b02 <SCH_Delete_Task+0x15e>
+ 8000a6a:	7bfb      	ldrb	r3, [r7, #15]
+ 8000a6c:	73bb      	strb	r3, [r7, #14]
+ 8000a6e:	e060      	b.n	8000b32 <SCH_Delete_Task+0x15e>
 					SCH_tasks_G[j].pTask = SCH_tasks_G[j+1].pTask;
- 8000a40:	7bbb      	ldrb	r3, [r7, #14]
- 8000a42:	1c59      	adds	r1, r3, #1
- 8000a44:	7bba      	ldrb	r2, [r7, #14]
- 8000a46:	4850      	ldr	r0, [pc, #320]	; (8000b88 <SCH_Delete_Task+0x1e4>)
- 8000a48:	460b      	mov	r3, r1
- 8000a4a:	009b      	lsls	r3, r3, #2
- 8000a4c:	440b      	add	r3, r1
- 8000a4e:	009b      	lsls	r3, r3, #2
- 8000a50:	4403      	add	r3, r0
- 8000a52:	6819      	ldr	r1, [r3, #0]
- 8000a54:	484c      	ldr	r0, [pc, #304]	; (8000b88 <SCH_Delete_Task+0x1e4>)
- 8000a56:	4613      	mov	r3, r2
- 8000a58:	009b      	lsls	r3, r3, #2
- 8000a5a:	4413      	add	r3, r2
- 8000a5c:	009b      	lsls	r3, r3, #2
- 8000a5e:	4403      	add	r3, r0
- 8000a60:	6019      	str	r1, [r3, #0]
+ 8000a70:	7bbb      	ldrb	r3, [r7, #14]
+ 8000a72:	1c59      	adds	r1, r3, #1
+ 8000a74:	7bba      	ldrb	r2, [r7, #14]
+ 8000a76:	4850      	ldr	r0, [pc, #320]	; (8000bb8 <SCH_Delete_Task+0x1e4>)
+ 8000a78:	460b      	mov	r3, r1
+ 8000a7a:	009b      	lsls	r3, r3, #2
+ 8000a7c:	440b      	add	r3, r1
+ 8000a7e:	009b      	lsls	r3, r3, #2
+ 8000a80:	4403      	add	r3, r0
+ 8000a82:	6819      	ldr	r1, [r3, #0]
+ 8000a84:	484c      	ldr	r0, [pc, #304]	; (8000bb8 <SCH_Delete_Task+0x1e4>)
+ 8000a86:	4613      	mov	r3, r2
+ 8000a88:	009b      	lsls	r3, r3, #2
+ 8000a8a:	4413      	add	r3, r2
+ 8000a8c:	009b      	lsls	r3, r3, #2
+ 8000a8e:	4403      	add	r3, r0
+ 8000a90:	6019      	str	r1, [r3, #0]
 					SCH_tasks_G[j].Period = SCH_tasks_G[j+1].Period;
- 8000a62:	7bbb      	ldrb	r3, [r7, #14]
- 8000a64:	1c59      	adds	r1, r3, #1
- 8000a66:	7bba      	ldrb	r2, [r7, #14]
- 8000a68:	4847      	ldr	r0, [pc, #284]	; (8000b88 <SCH_Delete_Task+0x1e4>)
- 8000a6a:	460b      	mov	r3, r1
- 8000a6c:	009b      	lsls	r3, r3, #2
- 8000a6e:	440b      	add	r3, r1
- 8000a70:	009b      	lsls	r3, r3, #2
- 8000a72:	4403      	add	r3, r0
- 8000a74:	3308      	adds	r3, #8
- 8000a76:	6819      	ldr	r1, [r3, #0]
- 8000a78:	4843      	ldr	r0, [pc, #268]	; (8000b88 <SCH_Delete_Task+0x1e4>)
- 8000a7a:	4613      	mov	r3, r2
- 8000a7c:	009b      	lsls	r3, r3, #2
- 8000a7e:	4413      	add	r3, r2
- 8000a80:	009b      	lsls	r3, r3, #2
- 8000a82:	4403      	add	r3, r0
- 8000a84:	3308      	adds	r3, #8
- 8000a86:	6019      	str	r1, [r3, #0]
+ 8000a92:	7bbb      	ldrb	r3, [r7, #14]
+ 8000a94:	1c59      	adds	r1, r3, #1
+ 8000a96:	7bba      	ldrb	r2, [r7, #14]
+ 8000a98:	4847      	ldr	r0, [pc, #284]	; (8000bb8 <SCH_Delete_Task+0x1e4>)
+ 8000a9a:	460b      	mov	r3, r1
+ 8000a9c:	009b      	lsls	r3, r3, #2
+ 8000a9e:	440b      	add	r3, r1
+ 8000aa0:	009b      	lsls	r3, r3, #2
+ 8000aa2:	4403      	add	r3, r0
+ 8000aa4:	3308      	adds	r3, #8
+ 8000aa6:	6819      	ldr	r1, [r3, #0]
+ 8000aa8:	4843      	ldr	r0, [pc, #268]	; (8000bb8 <SCH_Delete_Task+0x1e4>)
+ 8000aaa:	4613      	mov	r3, r2
+ 8000aac:	009b      	lsls	r3, r3, #2
+ 8000aae:	4413      	add	r3, r2
+ 8000ab0:	009b      	lsls	r3, r3, #2
+ 8000ab2:	4403      	add	r3, r0
+ 8000ab4:	3308      	adds	r3, #8
+ 8000ab6:	6019      	str	r1, [r3, #0]
 					SCH_tasks_G[j].Delay = SCH_tasks_G[j+1].Delay;
- 8000a88:	7bbb      	ldrb	r3, [r7, #14]
- 8000a8a:	1c59      	adds	r1, r3, #1
- 8000a8c:	7bba      	ldrb	r2, [r7, #14]
- 8000a8e:	483e      	ldr	r0, [pc, #248]	; (8000b88 <SCH_Delete_Task+0x1e4>)
- 8000a90:	460b      	mov	r3, r1
- 8000a92:	009b      	lsls	r3, r3, #2
- 8000a94:	440b      	add	r3, r1
- 8000a96:	009b      	lsls	r3, r3, #2
- 8000a98:	4403      	add	r3, r0
- 8000a9a:	3304      	adds	r3, #4
- 8000a9c:	6819      	ldr	r1, [r3, #0]
- 8000a9e:	483a      	ldr	r0, [pc, #232]	; (8000b88 <SCH_Delete_Task+0x1e4>)
- 8000aa0:	4613      	mov	r3, r2
- 8000aa2:	009b      	lsls	r3, r3, #2
- 8000aa4:	4413      	add	r3, r2
- 8000aa6:	009b      	lsls	r3, r3, #2
- 8000aa8:	4403      	add	r3, r0
- 8000aaa:	3304      	adds	r3, #4
- 8000aac:	6019      	str	r1, [r3, #0]
+ 8000ab8:	7bbb      	ldrb	r3, [r7, #14]
+ 8000aba:	1c59      	adds	r1, r3, #1
+ 8000abc:	7bba      	ldrb	r2, [r7, #14]
+ 8000abe:	483e      	ldr	r0, [pc, #248]	; (8000bb8 <SCH_Delete_Task+0x1e4>)
+ 8000ac0:	460b      	mov	r3, r1
+ 8000ac2:	009b      	lsls	r3, r3, #2
+ 8000ac4:	440b      	add	r3, r1
+ 8000ac6:	009b      	lsls	r3, r3, #2
+ 8000ac8:	4403      	add	r3, r0
+ 8000aca:	3304      	adds	r3, #4
+ 8000acc:	6819      	ldr	r1, [r3, #0]
+ 8000ace:	483a      	ldr	r0, [pc, #232]	; (8000bb8 <SCH_Delete_Task+0x1e4>)
+ 8000ad0:	4613      	mov	r3, r2
+ 8000ad2:	009b      	lsls	r3, r3, #2
+ 8000ad4:	4413      	add	r3, r2
+ 8000ad6:	009b      	lsls	r3, r3, #2
+ 8000ad8:	4403      	add	r3, r0
+ 8000ada:	3304      	adds	r3, #4
+ 8000adc:	6019      	str	r1, [r3, #0]
 					SCH_tasks_G[j].RunMe = SCH_tasks_G[j+1].RunMe;
- 8000aae:	7bbb      	ldrb	r3, [r7, #14]
- 8000ab0:	1c59      	adds	r1, r3, #1
- 8000ab2:	7bba      	ldrb	r2, [r7, #14]
- 8000ab4:	4834      	ldr	r0, [pc, #208]	; (8000b88 <SCH_Delete_Task+0x1e4>)
- 8000ab6:	460b      	mov	r3, r1
- 8000ab8:	009b      	lsls	r3, r3, #2
- 8000aba:	440b      	add	r3, r1
- 8000abc:	009b      	lsls	r3, r3, #2
- 8000abe:	4403      	add	r3, r0
- 8000ac0:	330c      	adds	r3, #12
- 8000ac2:	7818      	ldrb	r0, [r3, #0]
- 8000ac4:	4930      	ldr	r1, [pc, #192]	; (8000b88 <SCH_Delete_Task+0x1e4>)
- 8000ac6:	4613      	mov	r3, r2
- 8000ac8:	009b      	lsls	r3, r3, #2
- 8000aca:	4413      	add	r3, r2
- 8000acc:	009b      	lsls	r3, r3, #2
- 8000ace:	440b      	add	r3, r1
- 8000ad0:	330c      	adds	r3, #12
- 8000ad2:	4602      	mov	r2, r0
- 8000ad4:	701a      	strb	r2, [r3, #0]
+ 8000ade:	7bbb      	ldrb	r3, [r7, #14]
+ 8000ae0:	1c59      	adds	r1, r3, #1
+ 8000ae2:	7bba      	ldrb	r2, [r7, #14]
+ 8000ae4:	4834      	ldr	r0, [pc, #208]	; (8000bb8 <SCH_Delete_Task+0x1e4>)
+ 8000ae6:	460b      	mov	r3, r1
+ 8000ae8:	009b      	lsls	r3, r3, #2
+ 8000aea:	440b      	add	r3, r1
+ 8000aec:	009b      	lsls	r3, r3, #2
+ 8000aee:	4403      	add	r3, r0
+ 8000af0:	330c      	adds	r3, #12
+ 8000af2:	7818      	ldrb	r0, [r3, #0]
+ 8000af4:	4930      	ldr	r1, [pc, #192]	; (8000bb8 <SCH_Delete_Task+0x1e4>)
+ 8000af6:	4613      	mov	r3, r2
+ 8000af8:	009b      	lsls	r3, r3, #2
+ 8000afa:	4413      	add	r3, r2
+ 8000afc:	009b      	lsls	r3, r3, #2
+ 8000afe:	440b      	add	r3, r1
+ 8000b00:	330c      	adds	r3, #12
+ 8000b02:	4602      	mov	r2, r0
+ 8000b04:	701a      	strb	r2, [r3, #0]
 					SCH_tasks_G[j].TaskID = SCH_tasks_G[j+1].TaskID;
- 8000ad6:	7bbb      	ldrb	r3, [r7, #14]
- 8000ad8:	1c59      	adds	r1, r3, #1
- 8000ada:	7bba      	ldrb	r2, [r7, #14]
- 8000adc:	482a      	ldr	r0, [pc, #168]	; (8000b88 <SCH_Delete_Task+0x1e4>)
- 8000ade:	460b      	mov	r3, r1
- 8000ae0:	009b      	lsls	r3, r3, #2
- 8000ae2:	440b      	add	r3, r1
- 8000ae4:	009b      	lsls	r3, r3, #2
- 8000ae6:	4403      	add	r3, r0
- 8000ae8:	3310      	adds	r3, #16
- 8000aea:	6819      	ldr	r1, [r3, #0]
- 8000aec:	4826      	ldr	r0, [pc, #152]	; (8000b88 <SCH_Delete_Task+0x1e4>)
- 8000aee:	4613      	mov	r3, r2
- 8000af0:	009b      	lsls	r3, r3, #2
- 8000af2:	4413      	add	r3, r2
- 8000af4:	009b      	lsls	r3, r3, #2
- 8000af6:	4403      	add	r3, r0
- 8000af8:	3310      	adds	r3, #16
- 8000afa:	6019      	str	r1, [r3, #0]
-				for( j = taskIndex; j < SCH_MAX_TASKS - 1; j ++){
- 8000afc:	7bbb      	ldrb	r3, [r7, #14]
- 8000afe:	3301      	adds	r3, #1
- 8000b00:	73bb      	strb	r3, [r7, #14]
- 8000b02:	7bbb      	ldrb	r3, [r7, #14]
- 8000b04:	2b08      	cmp	r3, #8
- 8000b06:	d99b      	bls.n	8000a40 <SCH_Delete_Task+0x9c>
-				}
-				SCH_tasks_G[j].pTask = 0;
- 8000b08:	7bba      	ldrb	r2, [r7, #14]
- 8000b0a:	491f      	ldr	r1, [pc, #124]	; (8000b88 <SCH_Delete_Task+0x1e4>)
- 8000b0c:	4613      	mov	r3, r2
- 8000b0e:	009b      	lsls	r3, r3, #2
- 8000b10:	4413      	add	r3, r2
- 8000b12:	009b      	lsls	r3, r3, #2
- 8000b14:	440b      	add	r3, r1
- 8000b16:	2200      	movs	r2, #0
- 8000b18:	601a      	str	r2, [r3, #0]
-				SCH_tasks_G[j].Period = 0;
- 8000b1a:	7bba      	ldrb	r2, [r7, #14]
- 8000b1c:	491a      	ldr	r1, [pc, #104]	; (8000b88 <SCH_Delete_Task+0x1e4>)
+ 8000b06:	7bbb      	ldrb	r3, [r7, #14]
+ 8000b08:	1c59      	adds	r1, r3, #1
+ 8000b0a:	7bba      	ldrb	r2, [r7, #14]
+ 8000b0c:	482a      	ldr	r0, [pc, #168]	; (8000bb8 <SCH_Delete_Task+0x1e4>)
+ 8000b0e:	460b      	mov	r3, r1
+ 8000b10:	009b      	lsls	r3, r3, #2
+ 8000b12:	440b      	add	r3, r1
+ 8000b14:	009b      	lsls	r3, r3, #2
+ 8000b16:	4403      	add	r3, r0
+ 8000b18:	3310      	adds	r3, #16
+ 8000b1a:	6819      	ldr	r1, [r3, #0]
+ 8000b1c:	4826      	ldr	r0, [pc, #152]	; (8000bb8 <SCH_Delete_Task+0x1e4>)
  8000b1e:	4613      	mov	r3, r2
  8000b20:	009b      	lsls	r3, r3, #2
  8000b22:	4413      	add	r3, r2
  8000b24:	009b      	lsls	r3, r3, #2
- 8000b26:	440b      	add	r3, r1
- 8000b28:	3308      	adds	r3, #8
- 8000b2a:	2200      	movs	r2, #0
- 8000b2c:	601a      	str	r2, [r3, #0]
+ 8000b26:	4403      	add	r3, r0
+ 8000b28:	3310      	adds	r3, #16
+ 8000b2a:	6019      	str	r1, [r3, #0]
+				for( j = taskIndex; j < SCH_MAX_TASKS - 1; j ++){
+ 8000b2c:	7bbb      	ldrb	r3, [r7, #14]
+ 8000b2e:	3301      	adds	r3, #1
+ 8000b30:	73bb      	strb	r3, [r7, #14]
+ 8000b32:	7bbb      	ldrb	r3, [r7, #14]
+ 8000b34:	2b08      	cmp	r3, #8
+ 8000b36:	d99b      	bls.n	8000a70 <SCH_Delete_Task+0x9c>
+				}
+				SCH_tasks_G[j].pTask = 0;
+ 8000b38:	7bba      	ldrb	r2, [r7, #14]
+ 8000b3a:	491f      	ldr	r1, [pc, #124]	; (8000bb8 <SCH_Delete_Task+0x1e4>)
+ 8000b3c:	4613      	mov	r3, r2
+ 8000b3e:	009b      	lsls	r3, r3, #2
+ 8000b40:	4413      	add	r3, r2
+ 8000b42:	009b      	lsls	r3, r3, #2
+ 8000b44:	440b      	add	r3, r1
+ 8000b46:	2200      	movs	r2, #0
+ 8000b48:	601a      	str	r2, [r3, #0]
+				SCH_tasks_G[j].Period = 0;
+ 8000b4a:	7bba      	ldrb	r2, [r7, #14]
+ 8000b4c:	491a      	ldr	r1, [pc, #104]	; (8000bb8 <SCH_Delete_Task+0x1e4>)
+ 8000b4e:	4613      	mov	r3, r2
+ 8000b50:	009b      	lsls	r3, r3, #2
+ 8000b52:	4413      	add	r3, r2
+ 8000b54:	009b      	lsls	r3, r3, #2
+ 8000b56:	440b      	add	r3, r1
+ 8000b58:	3308      	adds	r3, #8
+ 8000b5a:	2200      	movs	r2, #0
+ 8000b5c:	601a      	str	r2, [r3, #0]
 				SCH_tasks_G[j].Delay = 0;
- 8000b2e:	7bba      	ldrb	r2, [r7, #14]
- 8000b30:	4915      	ldr	r1, [pc, #84]	; (8000b88 <SCH_Delete_Task+0x1e4>)
- 8000b32:	4613      	mov	r3, r2
- 8000b34:	009b      	lsls	r3, r3, #2
- 8000b36:	4413      	add	r3, r2
- 8000b38:	009b      	lsls	r3, r3, #2
- 8000b3a:	440b      	add	r3, r1
- 8000b3c:	3304      	adds	r3, #4
- 8000b3e:	2200      	movs	r2, #0
- 8000b40:	601a      	str	r2, [r3, #0]
+ 8000b5e:	7bba      	ldrb	r2, [r7, #14]
+ 8000b60:	4915      	ldr	r1, [pc, #84]	; (8000bb8 <SCH_Delete_Task+0x1e4>)
+ 8000b62:	4613      	mov	r3, r2
+ 8000b64:	009b      	lsls	r3, r3, #2
+ 8000b66:	4413      	add	r3, r2
+ 8000b68:	009b      	lsls	r3, r3, #2
+ 8000b6a:	440b      	add	r3, r1
+ 8000b6c:	3304      	adds	r3, #4
+ 8000b6e:	2200      	movs	r2, #0
+ 8000b70:	601a      	str	r2, [r3, #0]
 				SCH_tasks_G[j].RunMe = 0;
- 8000b42:	7bba      	ldrb	r2, [r7, #14]
- 8000b44:	4910      	ldr	r1, [pc, #64]	; (8000b88 <SCH_Delete_Task+0x1e4>)
- 8000b46:	4613      	mov	r3, r2
- 8000b48:	009b      	lsls	r3, r3, #2
- 8000b4a:	4413      	add	r3, r2
- 8000b4c:	009b      	lsls	r3, r3, #2
- 8000b4e:	440b      	add	r3, r1
- 8000b50:	330c      	adds	r3, #12
- 8000b52:	2200      	movs	r2, #0
- 8000b54:	701a      	strb	r2, [r3, #0]
+ 8000b72:	7bba      	ldrb	r2, [r7, #14]
+ 8000b74:	4910      	ldr	r1, [pc, #64]	; (8000bb8 <SCH_Delete_Task+0x1e4>)
+ 8000b76:	4613      	mov	r3, r2
+ 8000b78:	009b      	lsls	r3, r3, #2
+ 8000b7a:	4413      	add	r3, r2
+ 8000b7c:	009b      	lsls	r3, r3, #2
+ 8000b7e:	440b      	add	r3, r1
+ 8000b80:	330c      	adds	r3, #12
+ 8000b82:	2200      	movs	r2, #0
+ 8000b84:	701a      	strb	r2, [r3, #0]
 				SCH_tasks_G[j].TaskID = 0;
- 8000b56:	7bba      	ldrb	r2, [r7, #14]
- 8000b58:	490b      	ldr	r1, [pc, #44]	; (8000b88 <SCH_Delete_Task+0x1e4>)
- 8000b5a:	4613      	mov	r3, r2
- 8000b5c:	009b      	lsls	r3, r3, #2
- 8000b5e:	4413      	add	r3, r2
- 8000b60:	009b      	lsls	r3, r3, #2
- 8000b62:	440b      	add	r3, r1
- 8000b64:	3310      	adds	r3, #16
- 8000b66:	2200      	movs	r2, #0
- 8000b68:	601a      	str	r2, [r3, #0]
+ 8000b86:	7bba      	ldrb	r2, [r7, #14]
+ 8000b88:	490b      	ldr	r1, [pc, #44]	; (8000bb8 <SCH_Delete_Task+0x1e4>)
+ 8000b8a:	4613      	mov	r3, r2
+ 8000b8c:	009b      	lsls	r3, r3, #2
+ 8000b8e:	4413      	add	r3, r2
+ 8000b90:	009b      	lsls	r3, r3, #2
+ 8000b92:	440b      	add	r3, r1
+ 8000b94:	3310      	adds	r3, #16
+ 8000b96:	2200      	movs	r2, #0
+ 8000b98:	601a      	str	r2, [r3, #0]
 				return Return_code;
- 8000b6a:	7b7b      	ldrb	r3, [r7, #13]
- 8000b6c:	e007      	b.n	8000b7e <SCH_Delete_Task+0x1da>
+ 8000b9a:	7b7b      	ldrb	r3, [r7, #13]
+ 8000b9c:	e007      	b.n	8000bae <SCH_Delete_Task+0x1da>
 		for(taskIndex = 0; taskIndex < SCH_MAX_TASKS; taskIndex ++){
- 8000b6e:	7bfb      	ldrb	r3, [r7, #15]
- 8000b70:	3301      	adds	r3, #1
- 8000b72:	73fb      	strb	r3, [r7, #15]
- 8000b74:	7bfb      	ldrb	r3, [r7, #15]
- 8000b76:	2b09      	cmp	r3, #9
- 8000b78:	f67f af21 	bls.w	80009be <SCH_Delete_Task+0x1a>
+ 8000b9e:	7bfb      	ldrb	r3, [r7, #15]
+ 8000ba0:	3301      	adds	r3, #1
+ 8000ba2:	73fb      	strb	r3, [r7, #15]
+ 8000ba4:	7bfb      	ldrb	r3, [r7, #15]
+ 8000ba6:	2b09      	cmp	r3, #9
+ 8000ba8:	f67f af21 	bls.w	80009ee <SCH_Delete_Task+0x1a>
 			}
 		}
 	}
 	return Return_code; // return status
- 8000b7c:	7b7b      	ldrb	r3, [r7, #13]
+ 8000bac:	7b7b      	ldrb	r3, [r7, #13]
 }
- 8000b7e:	4618      	mov	r0, r3
- 8000b80:	3714      	adds	r7, #20
- 8000b82:	46bd      	mov	sp, r7
- 8000b84:	bc80      	pop	{r7}
- 8000b86:	4770      	bx	lr
- 8000b88:	200001b8 	.word	0x200001b8
+ 8000bae:	4618      	mov	r0, r3
+ 8000bb0:	3714      	adds	r7, #20
+ 8000bb2:	46bd      	mov	sp, r7
+ 8000bb4:	bc80      	pop	{r7}
+ 8000bb6:	4770      	bx	lr
+ 8000bb8:	200001b8 	.word	0x200001b8
 
-08000b8c <SCH_Dispatch_Tasks>:
+08000bbc <SCH_Dispatch_Tasks>:
 
 void SCH_Dispatch_Tasks(void){
- 8000b8c:	b5b0      	push	{r4, r5, r7, lr}
- 8000b8e:	b086      	sub	sp, #24
- 8000b90:	af00      	add	r7, sp, #0
+ 8000bbc:	b5b0      	push	{r4, r5, r7, lr}
+ 8000bbe:	b086      	sub	sp, #24
+ 8000bc0:	af00      	add	r7, sp, #0
 	if(SCH_tasks_G[0].RunMe > 0) {
- 8000b92:	4b12      	ldr	r3, [pc, #72]	; (8000bdc <SCH_Dispatch_Tasks+0x50>)
- 8000b94:	7b1b      	ldrb	r3, [r3, #12]
- 8000b96:	2b00      	cmp	r3, #0
- 8000b98:	d019      	beq.n	8000bce <SCH_Dispatch_Tasks+0x42>
+ 8000bc2:	4b12      	ldr	r3, [pc, #72]	; (8000c0c <SCH_Dispatch_Tasks+0x50>)
+ 8000bc4:	7b1b      	ldrb	r3, [r3, #12]
+ 8000bc6:	2b00      	cmp	r3, #0
+ 8000bc8:	d019      	beq.n	8000bfe <SCH_Dispatch_Tasks+0x42>
 		(*SCH_tasks_G[0].pTask)(); // Run the task
- 8000b9a:	4b10      	ldr	r3, [pc, #64]	; (8000bdc <SCH_Dispatch_Tasks+0x50>)
- 8000b9c:	681b      	ldr	r3, [r3, #0]
- 8000b9e:	4798      	blx	r3
+ 8000bca:	4b10      	ldr	r3, [pc, #64]	; (8000c0c <SCH_Dispatch_Tasks+0x50>)
+ 8000bcc:	681b      	ldr	r3, [r3, #0]
+ 8000bce:	4798      	blx	r3
 		SCH_tasks_G[0].RunMe = 0; // Reset flag
- 8000ba0:	4b0e      	ldr	r3, [pc, #56]	; (8000bdc <SCH_Dispatch_Tasks+0x50>)
- 8000ba2:	2200      	movs	r2, #0
- 8000ba4:	731a      	strb	r2, [r3, #12]
+ 8000bd0:	4b0e      	ldr	r3, [pc, #56]	; (8000c0c <SCH_Dispatch_Tasks+0x50>)
+ 8000bd2:	2200      	movs	r2, #0
+ 8000bd4:	731a      	strb	r2, [r3, #12]
 		sTask temtask = SCH_tasks_G[0];
- 8000ba6:	4b0d      	ldr	r3, [pc, #52]	; (8000bdc <SCH_Dispatch_Tasks+0x50>)
- 8000ba8:	1d3c      	adds	r4, r7, #4
- 8000baa:	461d      	mov	r5, r3
- 8000bac:	cd0f      	ldmia	r5!, {r0, r1, r2, r3}
- 8000bae:	c40f      	stmia	r4!, {r0, r1, r2, r3}
- 8000bb0:	682b      	ldr	r3, [r5, #0]
- 8000bb2:	6023      	str	r3, [r4, #0]
+ 8000bd6:	4b0d      	ldr	r3, [pc, #52]	; (8000c0c <SCH_Dispatch_Tasks+0x50>)
+ 8000bd8:	1d3c      	adds	r4, r7, #4
+ 8000bda:	461d      	mov	r5, r3
+ 8000bdc:	cd0f      	ldmia	r5!, {r0, r1, r2, r3}
+ 8000bde:	c40f      	stmia	r4!, {r0, r1, r2, r3}
+ 8000be0:	682b      	ldr	r3, [r5, #0]
+ 8000be2:	6023      	str	r3, [r4, #0]
 		SCH_Delete_Task(temtask.TaskID);
- 8000bb4:	697b      	ldr	r3, [r7, #20]
- 8000bb6:	4618      	mov	r0, r3
- 8000bb8:	f7ff fef4 	bl	80009a4 <SCH_Delete_Task>
+ 8000be4:	697b      	ldr	r3, [r7, #20]
+ 8000be6:	4618      	mov	r0, r3
+ 8000be8:	f7ff fef4 	bl	80009d4 <SCH_Delete_Task>
 		if (temtask.Period != 0) {
- 8000bbc:	68fb      	ldr	r3, [r7, #12]
- 8000bbe:	2b00      	cmp	r3, #0
- 8000bc0:	d005      	beq.n	8000bce <SCH_Dispatch_Tasks+0x42>
+ 8000bec:	68fb      	ldr	r3, [r7, #12]
+ 8000bee:	2b00      	cmp	r3, #0
+ 8000bf0:	d005      	beq.n	8000bfe <SCH_Dispatch_Tasks+0x42>
 			SCH_Add_Task(temtask.pTask, temtask.Period, temtask.Period);
- 8000bc2:	687b      	ldr	r3, [r7, #4]
- 8000bc4:	68f9      	ldr	r1, [r7, #12]
- 8000bc6:	68fa      	ldr	r2, [r7, #12]
- 8000bc8:	4618      	mov	r0, r3
- 8000bca:	f7ff fde9 	bl	80007a0 <SCH_Add_Task>
+ 8000bf2:	687b      	ldr	r3, [r7, #4]
+ 8000bf4:	68f9      	ldr	r1, [r7, #12]
+ 8000bf6:	68fa      	ldr	r2, [r7, #12]
+ 8000bf8:	4618      	mov	r0, r3
+ 8000bfa:	f7ff fde9 	bl	80007d0 <SCH_Add_Task>
 		}
 	}
 	SCH_Go_To_Sleep();
- 8000bce:	f7ff fdbf 	bl	8000750 <SCH_Go_To_Sleep>
+ 8000bfe:	f7ff fdbf 	bl	8000780 <SCH_Go_To_Sleep>
 }
- 8000bd2:	bf00      	nop
- 8000bd4:	3718      	adds	r7, #24
- 8000bd6:	46bd      	mov	sp, r7
- 8000bd8:	bdb0      	pop	{r4, r5, r7, pc}
- 8000bda:	bf00      	nop
- 8000bdc:	200001b8 	.word	0x200001b8
-
-08000be0 <Get_New_Task_ID>:
-
-static uint32_t Get_New_Task_ID(void){
- 8000be0:	b480      	push	{r7}
- 8000be2:	af00      	add	r7, sp, #0
-	newTaskID++;
- 8000be4:	4b09      	ldr	r3, [pc, #36]	; (8000c0c <Get_New_Task_ID+0x2c>)
- 8000be6:	681b      	ldr	r3, [r3, #0]
- 8000be8:	3301      	adds	r3, #1
- 8000bea:	4a08      	ldr	r2, [pc, #32]	; (8000c0c <Get_New_Task_ID+0x2c>)
- 8000bec:	6013      	str	r3, [r2, #0]
-	if(newTaskID == NO_TASK_ID){
- 8000bee:	4b07      	ldr	r3, [pc, #28]	; (8000c0c <Get_New_Task_ID+0x2c>)
- 8000bf0:	681b      	ldr	r3, [r3, #0]
- 8000bf2:	2b00      	cmp	r3, #0
- 8000bf4:	d104      	bne.n	8000c00 <Get_New_Task_ID+0x20>
-		newTaskID++;
- 8000bf6:	4b05      	ldr	r3, [pc, #20]	; (8000c0c <Get_New_Task_ID+0x2c>)
- 8000bf8:	681b      	ldr	r3, [r3, #0]
- 8000bfa:	3301      	adds	r3, #1
- 8000bfc:	4a03      	ldr	r2, [pc, #12]	; (8000c0c <Get_New_Task_ID+0x2c>)
- 8000bfe:	6013      	str	r3, [r2, #0]
-	}
-	return newTaskID;
- 8000c00:	4b02      	ldr	r3, [pc, #8]	; (8000c0c <Get_New_Task_ID+0x2c>)
- 8000c02:	681b      	ldr	r3, [r3, #0]
-}
- 8000c04:	4618      	mov	r0, r3
+ 8000c02:	bf00      	nop
+ 8000c04:	3718      	adds	r7, #24
  8000c06:	46bd      	mov	sp, r7
- 8000c08:	bc80      	pop	{r7}
- 8000c0a:	4770      	bx	lr
- 8000c0c:	20000280 	.word	0x20000280
+ 8000c08:	bdb0      	pop	{r4, r5, r7, pc}
+ 8000c0a:	bf00      	nop
+ 8000c0c:	200001b8 	.word	0x200001b8
 
 08000c10 <setTimer>:
 #include "software_timer.h"
