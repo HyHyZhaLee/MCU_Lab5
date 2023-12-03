@@ -5,6 +5,7 @@
 
 # Add inputs and outputs from these tool invocations to the build variables 
 C_SRCS += \
+../Core/Src/scheduler.c \
 ../Core/Src/software_timer.c \
 ../Core/Src/stm32f1xx_hal_msp.c \
 ../Core/Src/stm32f1xx_it.c \
@@ -14,10 +15,10 @@ C_SRCS += \
 ../Core/Src/timer.c 
 
 CPP_SRCS += \
-../Core/Src/main.cpp \
-../Core/Src/scheduler.cpp 
+../Core/Src/main.cpp 
 
 C_DEPS += \
+./Core/Src/scheduler.d \
 ./Core/Src/software_timer.d \
 ./Core/Src/stm32f1xx_hal_msp.d \
 ./Core/Src/stm32f1xx_it.d \
@@ -38,8 +39,7 @@ OBJS += \
 ./Core/Src/timer.o 
 
 CPP_DEPS += \
-./Core/Src/main.d \
-./Core/Src/scheduler.d 
+./Core/Src/main.d 
 
 
 # Each subdirectory must supply rules for building sources it contributes

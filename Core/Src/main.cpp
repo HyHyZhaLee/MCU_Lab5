@@ -198,13 +198,6 @@ void check_command_parser(){
 }
 
 #include "scheduler.h"
-  Scheduler sched;
-  char output[100];
-void getNumTask(){
-	uint8_t numTask = sched.getNumberOfTask();
-    sprintf(output, "Number of task: %lu#\r\n", numTask);
-    HAL_UART_Transmit(&huart2, (uint8_t*)output, strlen(output), 1000);
-}
 /* USER CODE END 0 */
 
 /**
@@ -245,9 +238,9 @@ int main(void)
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
-  sched.SCH_Add_Task(toggleLed, 500, 100);
-//  sched.SCH_Add_Task(check_command_parser, 100, 10);
-  sched.SCH_Add_Task(getNumTask, 1000, 0);
+  SCH_Add_Task(toggleLed, 500, 100);
+  SCH_Add_Task(check_command_parser, 100, 10);
+  SCH_Add_Task(timerRun, 1000, 1);
   while (1)
   {
 //	  if(buffer_flag){
@@ -257,8 +250,7 @@ int main(void)
 //	  uart_communication_fsm();
 //	  HAL_GPIO_TogglePin(LED_RED_GPIO_Port, LED_RED_Pin);
 //	  HAL_Delay(1000);
-
-	  sched.SCH_Dispatch_Tasks();
+	  SCH_Dispatch_Tasks();
       /* USER CODE END WHILE */
   }
 
@@ -458,16 +450,11 @@ static void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
-int counter = 1500;
 void HAL_TIM_PeriodElapsedCallback ( TIM_HandleTypeDef * htim )
 {
 	if ( htim -> Instance == TIM2 ) {
 //		timerRun();
-		sched.SCH_Update();
-		counter--;
-		if(counter<=0){
-			getNumTask();
-		}
+		SCH_Update();
 	}
 }
 /* USER CODE END 4 */
