@@ -238,18 +238,11 @@ int main(void)
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
-  SCH_Add_Task(toggleLed, 500, 100);
+  SCH_Add_Task(toggleLed, 200, 0);
   SCH_Add_Task(check_command_parser, 100, 10);
-  SCH_Add_Task(timerRun, 1000, 1);
+  SCH_Add_Task(timerRun, 100, 1);
   while (1)
   {
-//	  if(buffer_flag){
-//		  command_parser_fsm();
-//		  buffer_flag = 0;
-//	  }
-//	  uart_communication_fsm();
-//	  HAL_GPIO_TogglePin(LED_RED_GPIO_Port, LED_RED_Pin);
-//	  HAL_Delay(1000);
 	  SCH_Dispatch_Tasks();
       /* USER CODE END WHILE */
   }

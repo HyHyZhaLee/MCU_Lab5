@@ -21,10 +21,7 @@ typedef struct {
 
 // The array of tasks
 static sTask SCH_tasks_G[SCH_MAX_TASKS];
-static uint8_t array_Of_Task_ID[SCH_MAX_TASKS];
 static uint32_t newTaskID = 0;
-static uint32_t rearQueue = 0;
-static uint32_t count_SCH_Update = 0;
 
 
 static uint32_t Get_New_Task_ID(void);
@@ -38,7 +35,6 @@ void SCH_Init(void){
 
 void SCH_Update(void){
 	// Check if there is a task at this location
-	count_SCH_Update ++;
 	if (SCH_tasks_G[0].pTask && SCH_tasks_G[0].RunMe == 0) {
 		if(SCH_tasks_G[0].Delay > 0){
 			SCH_tasks_G[0].Delay = SCH_tasks_G[0].Delay - 1;
@@ -128,7 +124,7 @@ uint8_t SCH_Delete_Task(uint32_t taskID){
 void SCH_Dispatch_Tasks(void){
 	if(SCH_tasks_G[0].RunMe > 0) {
 		(*SCH_tasks_G[0].pTask)(); // Run the task
-		SCH_tasks_G[0].RunMe = 0; // Reset / reduce RunMe flag
+		SCH_tasks_G[0].RunMe = 0; // Reset flag
 		sTask temtask = SCH_tasks_G[0];
 		SCH_Delete_Task(temtask.TaskID);
 		if (temtask.Period != 0) {
